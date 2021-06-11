@@ -1,23 +1,42 @@
 const CHANNEL_SECRET = PropertiesService.getScriptProperties().getProperty('CHANNEL_SECRET');
-const USERID_TEST = PropertiesService.getScriptProperties().getProperty('USERID_TEST');
+const TEST_USERID = PropertiesService.getScriptProperties().getProperty('TEST_USERID');
+const TEST_MAILADDRESS = PropertiesService.getScriptProperties().getProperty('TEST_MAILADDRESS');
 
 function myUtilitiesTest(){
-  let day = new Date();
-  console.log(getDayString(day));
-  console.log(getSignature('test'));
+  //APIリターン値のテスト
   console.log(JSON.stringify({'content': 'post ok'}));
   let postok = ContentService.createTextOutput(JSON.stringify({'content': 'post ok'})).setMimeType(ContentService.MimeType.JSON);
   console.log(postok.getContent());
-  let displayUserName = getLINEUserName(USERID_TEST);
-  console.log(displayUserName);
   let success = ContentService.createTextOutput("SUCCESS");
   console.log(success.getContent());
+
+  //スクリプトプロパティのセット
+  // let data = [ 'igapon@gmail.com', 'igapon+test@gmail.com' ];
+  // let name = "TEST_MAILADDRESS";
+  // setPropertyArray(name, data);
   //スクリプトプロパティを取得
   console.log(PropertiesService.getScriptProperties().getProperties());
-  // PropertiesService.getScriptProperties().getKeys().forEach(function(key){
-  //   let scriptProperties = PropertiesService.getScriptProperties().getProperty(key);
-  //   console.log(key + ':' + scriptProperties);
-  //   });
+
+  //sendLINE()は、LINEから呼び出されないとテストできないので未実施
+  let mailAddressList = getPropertyArray('TEST_MAILADDRESS');
+  let ret = sendEmail(mailAddressList,'user_message','userDisplayName');
+  console.log(ret);
+  let day = new Date();
+  console.log(getDayString(day));
+  console.log(getSignature('test'));
+  let displayUserName = getLINEUserName(TEST_USERID);
+  console.log(displayUserName);
+}
+
+//配列をプロパティにセットする
+function setPropertyArray(name, data) {
+  let prop = PropertiesService.getScriptProperties();
+  prop.setProperty(name, JSON.stringify(data));
+}
+
+function getPropertyArray(name) {
+  let prop = PropertiesService.getScriptProperties();
+  return JSON.parse(prop.getProperty(name));
 }
 
 //dayから「〇月〇日」の文字列を作って返す。
@@ -33,25 +52,6 @@ function getDayString(day){
     return DayString;
   };
 
-//LINEに応答メッセージを送る処理
-function sendLINE(reply_token, message){
-  let url = 'https://api.line.me/v2/bot/message/reply';
-  UrlFetchApp.fetch(url, {
-    'headers': {
-      'Content-Type': 'application/json; charset=UTF-8',
-      'Authorization': 'Bearer ' + CHANNEL_ACCESS_TOKEN,
-    },
-    'method': 'post',
-    'payload': JSON.stringify({
-      'replyToken': reply_token,
-      'messages': [{
-        'type': 'text',
-        'text': message,
-      }],
-    }),
-  });
-}
-
 //userIDからLINE表示名を取得する
 function getLINEUserName(userID){
   const url = `https://api.line.me/v2/bot/profile/${userID}`;
@@ -65,29 +65,42 @@ function getLINEUserName(userID){
   return JSON.parse(res.getContentText()).displayName;
 }
 
-//メッセージをメールに送る
+//LINEに応答メッセージを送る処理
+function sendLINE(reply_token, message){
+  if (reply_token){
+    let url = 'https://api.line.me/v2/bot/message/reply';
+    UrlFetchApp.fetch(url, {
+      'headers': {
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer ' + CHANNEL_ACCESS_TOKEN,
+      },
+      'method': 'post',
+      'payload': JSON.stringify({
+        'replyToken': reply_token,
+        'messages': [{
+          'type': 'text',
+          'text': message,
+        }],
+      }),
+    });
+    return true;
+  }
+  return false;
+}
+
+//メールにメッセージを送る
 //無料のGoogleアカウントの場合、GASのメール送信回数は1日100通が上限
 function sendEmail(mailAddressList, user_message, userDisplayName) {
-  if (typeof mailAddressList === 'undefined') {
-    Logger.log("sendEmail():typeof mailAddressList === 'undefined'");
-    return false;
+  if (mailAddressList) {
+    let subject = 'LINEチャットからの転送';
+    let body = `${user_message}`;
+    let options = {name: `${userDisplayName}`};
+    for (let i in mailAddressList){
+      GmailApp.sendEmail(mailAddressList[i], subject, body, options);
+    }
+    return true;
   }
-  if (mailAddressList == null){
-    Logger.log("sendEmail():mailAddressList == null");
-    return false;
-  }
-  if (mailAddressList.length == 0) {
-    Logger.log("sendEmail():mailAddressList == 0");
-    return false;
-  }
-  let subject = 'LINEチャットからの転送';
-  let body = `${user_message}`;
-  let options = {name: `${userDisplayName}`};
-  mailAddressList.forEach(function(key){
-    let recipient = key; //送信先のメールアドレス
-    GmailApp.sendEmail(recipient, subject, body, options);
-  });
-  return true;
+  return false;
 }
 
 // https://developers.line.biz/ja/reference/messaging-api/#signature-validation

@@ -1,7 +1,7 @@
 // スプレッドシートのURLは
 // https://docs.google.com/spreadsheets/d/XXXXXXX/edit
 // のような形になっています。XXXXXXXの部分がIDになります。
-// グループ名簿の「スプレッドシート」
+// 「グループ名簿」のスプレッドシート
 const MEMBER_SPREADSHEET_ID = PropertiesService.getScriptProperties().getProperty('MEMBER_SPREADSHEET_ID');
 const MEMBER_SHEET_NAME = PropertiesService.getScriptProperties().getProperty('MEMBER_SHEET_NAME');
 
@@ -20,14 +20,14 @@ function myTobaMembersTest() {
 (function(global){
   let TobaMembers = function() {
     let spreadsheet = SpreadsheetApp.openById(MEMBER_SPREADSHEET_ID);
-    let sheet = spreadsheet.getSheetByName(MEMBER_SHEET_NAME);
-    let _values = sheet.getDataRange().getValues();
+    this.sheet = spreadsheet.getSheetByName(MEMBER_SHEET_NAME);
+    let _values = this.sheet.getDataRange().getValues();
     this.header = new TobaMember(_values[0]);
     _values.shift(); //ヘッダーを削除
-    this.lastColumn = sheet.getDataRange().getLastColumn();
+    this.lastColumn = this.sheet.getDataRange().getLastColumn();
     this.lastRow = _values.length;
     this.members = [];
-    for(let i = 0; i < _values.length; i++){
+    for(let i in _values){
       this.members[i] = new TobaMember(_values[i]);
     }
 
@@ -37,7 +37,7 @@ function myTobaMembersTest() {
   TobaMembers.prototype.getLineBotTransferEMailList = function(){
     let lineBotTransferEMaillist = [];
     let count = 0;
-    for(let i = 0; i < this.lastRow; i++){
+    for(let i in this.members){
       if (this.members[i].lineBotTransferEMail != ''){
         lineBotTransferEMaillist[count++] = this.members[i].lineBotTransferEMail;
       }

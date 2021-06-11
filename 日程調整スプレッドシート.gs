@@ -1,7 +1,7 @@
 // スプレッドシートのURLは
 // https://docs.google.com/spreadsheets/d/XXXXXXX/edit
 // のような形になっています。XXXXXXXの部分がIDになります。
-// グループ日程調整の「スプレッドシート」
+// 「グループ日程調整」のスプレッドシート
 const SCHEDULE_SPREADSHEET_ID = PropertiesService.getScriptProperties().getProperty('SCHEDULE_SPREADSHEET_ID');
 const SCHEDULE_SHEET_NAME = PropertiesService.getScriptProperties().getProperty('SCHEDULE_SHEET_NAME');
 
@@ -35,14 +35,14 @@ function myDaysTest(){
 (function(global){
   let TobaDays = function() {
     let spreadsheet = SpreadsheetApp.openById(SCHEDULE_SPREADSHEET_ID);
-    let sheet = spreadsheet.getSheetByName(SCHEDULE_SHEET_NAME);
-    let _values = sheet.getDataRange().getValues();
+    this.sheet = spreadsheet.getSheetByName(SCHEDULE_SHEET_NAME);
+    let _values = this.sheet.getDataRange().getValues();
     this.header = new TobaDay(_values[0]);
     _values.shift(); //ヘッダーを削除
-    this.lastColumn = sheet.getDataRange().getLastColumn();
+    this.lastColumn = this.sheet.getDataRange().getLastColumn();
     this.lastRow = _values.length;
     this.days = [];
-    for(let i = 0; i < _values.length; i++){
+    for(let i in _values){
       this.days[i] = new TobaDay(_values[i]);
     }
 
@@ -51,11 +51,10 @@ function myDaysTest(){
 //次回のLINEボット列に値が入っている行のインスタンスを返す。
 //次回がない時、nullを返す。
   TobaDays.prototype.getNextLineBotDay = function(){
-    let count = 0;
     let lineBotList = this.getLineBotList();
     let date_now = new Date();
 //    let yesterday = Moment.moment(date_now).subtract(1,'d');
-    for(let i = 0; i < lineBotList.length; i++){
+    for(let i in lineBotList){
       if (Moment.moment(date_now).isAfter(lineBotList[i].day)){
         continue;
       }
@@ -67,8 +66,7 @@ function myDaysTest(){
 //メンバーインデックスリストから、名前文字列を作成して返す。
   TobaDays.prototype.getNamesString = function(list){
     let stringlist = [];
-    let count = 0;
-    for(let i = 0; i < list.length; i++){
+    for(let i in list){
       stringlist += '　' + this.header.member[list[i]].replace('\n', ' ');
     }
     return stringlist;
@@ -78,7 +76,7 @@ function myDaysTest(){
   TobaDays.prototype.getLineBotList = function(){
     let daylist = [];
     let count = 0;
-    for(let i = 0; i < this.lastRow; i++){
+    for(let i in this.days){
       if (this.days[i].lineBotCtrl != ''){
         daylist[count++] = this.days[i];
       }
@@ -93,7 +91,7 @@ function myDaysTest(){
     let count = 0;
     let date_now = new Date();
 //    let yesterday = Moment.moment(date_now).subtract(1,'d');
-    for(let i = 0; i < lineBotList.length; i++){
+    for(let i in lineBotList){
       if (Moment.moment(date_now).isAfter(lineBotList[i].day)){
         continue;
       }
@@ -127,7 +125,7 @@ function myDaysTest(){
   TobaDay.prototype.getParticipantMemberIndexList = function(){
     let indexlist = [];
     let count = 0;
-    for(let i = 0; i < this.member.length; i++){
+    for(let i in this.member){
       if (this.member[i] == '〇' ||
           this.member[i] == '゜' ||
           this.member[i] == '○'){
@@ -141,7 +139,7 @@ function myDaysTest(){
   TobaDay.prototype.getNoAnswerMemberIndexList = function(){
     let indexlist = [];
     let count = 0;
-    for(let i = 0; i < this.member.length; i++){
+    for(let i in this.member){
       if (this.member[i] == ''){
         indexlist[count++] = i;
       }

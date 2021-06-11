@@ -22,10 +22,11 @@ const CHANNEL_ACCESS_TOKEN = PropertiesService.getScriptProperties().getProperty
 const STATUS_200 = ContentService.createTextOutput(JSON.stringify({'status': 200})).setMimeType(ContentService.MimeType.JSON);
 
 function myBotTest(){
-    // let user_message = '日程情報';
-    let user_message = '次回予報';
-    // let user_message = '次回未記入者';
-    // let user_message = '次回参加者';
+    let user_message;
+    // user_message = '日程情報';
+    user_message = '次回予報';
+    // user_message = '次回未記入者';
+    // user_message = '次回参加者';
     let menus = new TobaRichMenus();
     bot_message = menus.getReturnText(user_message);
     console.log(bot_message);
@@ -43,17 +44,18 @@ function doGet(e) {
 function doPost(e) {
   if (!e){
     //引数が未定義ならテスト動作とする
-    let reply_token = 'undefined';
+    let reply_token = '';
+    let user_message;
     let members = new TobaMembers();
     let mailAddressList = members.getLineBotTransferEMailList();
     console.log(mailAddressList);
     mailAddressList = ['igapon@gmail.com'];
-    const userDisplayName = 'イガポン';
-    let user_message = '次回予報';
-    //let user_message = '日程情報';
-    //let user_message = '次回未記入者';
-    //let user_message = '次回参加者';
-    //let user_message = 'メールに転送されるLINEのメッセージ';
+    const userDisplayName = 'userDisplayName';
+    user_message = '次回予報';
+    // user_message = '日程情報';
+    // user_message = '次回未記入者';
+    // user_message = '次回参加者';
+    // user_message = 'メールに転送されるLINEのメッセージ';
     return procMessage(reply_token, mailAddressList, user_message, userDisplayName);
   }else{
     const contents = e.postData.contents;
@@ -73,19 +75,18 @@ function doPost(e) {
     // }
 
     const event = JSON.parse(contents).events[0];
-    if (event === null) {
+    if (!event) {
       // LINEプラットフォームから疎通確認のために、Webhookイベントが含まれないHTTP POSTリクエストが送信されることがあります。 この場合も、ステータスコード200を返してください。
       // https://developers.line.biz/ja/reference/messaging-api/#response
       return STATUS_200;
     }
     const type = event.message.type;
-    //LINEからTEXT以外が送られた場合
     if (type !== 'text') {
+      //LINEからTEXT以外が送られた場合
       return STATUS_200;
     }
     const reply_token = event.replyToken;
-    //返信用トークンが使えない場合
-    if (typeof reply_token === 'undefined') {
+    if (!reply_token) {
       // LINEプラットフォームから送信されるHTTP POSTリクエストは、送受信に失敗しても再送されません。
       return STATUS_200;
     }
@@ -100,96 +101,143 @@ function doPost(e) {
 
 //メッセージプロシージャ
 function procMessage(reply_token, mailAddressList, user_message, userDisplayName){
-  let bot_message = [];
+  let bot_message;
   //受け取ったメッセージはメールに転送する(メニュー呼び出しメッセージ含む)
   sendEmail(mailAddressList, user_message, userDisplayName + 'の発言');
 
-  //メニュー呼び出し処理
-  console.log('--- ' + user_message + ' ---');
-  if (user_message === '次回予報') {
+  //メニュー呼び出し処理、メニュー以外の応答の時は、ボットはチャットでしゃべらない
+  if (['次回予報','日程情報','次回未記入者','次回参加者'].includes(user_message)){
     let menus = new TobaRichMenus();
     bot_message = menus.getReturnText(user_message);
-  }else if (user_message === '日程情報') {
-    let menus = new TobaRichMenus();
-    bot_message = menus.getReturnText(user_message);
-  }else if (user_message === '次回未記入者') {
-    let menus = new TobaRichMenus();
-    bot_message = menus.getReturnText(user_message);
-  }else if (user_message === '次回参加者') {
-    let menus = new TobaRichMenus();
-    bot_message = menus.getReturnText(user_message);
-  }else{
-    console.log('メニュー以外の応答の時は、ボットはチャットでしゃべらない');
-    return STATUS_200;
+    //メニュー呼び出しの応答をメールに転送する
+    sendEmail(mailAddressList, bot_message , 'LINE bot 翔波ちゃんネルの発言');
+    if (reply_token){
+      sendLINE(reply_token, bot_message);
+    }
   }
-  //メニュー呼び出しの応答をメールに転送する
-  sendEmail(mailAddressList, bot_message , 'LINE bot 翔波ちゃんネルの発言');
-
-  console.log('--- ' + bot_message + ' ---');
-  if (!reply_token || reply_token === 'undefined'){
-    console.log('メニュー呼び出しに対して、応答したいが返信用トークンがわからない');
-    return STATUS_200;
-  }
-  sendLINE(reply_token, bot_message);
-
   return STATUS_200;
 }
 
-function updateTobaRichMenuNextForcast() {
-  let user_message = '次回予報';
+function updateTobaRichMenuAll() {
+  let user_message;
+  let bot_message;
+  let main_message;
   let days = new TobaDays();
   let forcasts = new Forcasts();
-  let nextLineBotDay = days.getNextLineBotDay();
-  if (nextLineBotDay === null){
-    bot_message = user_message + '\n' + '次回予定がありません。';
-    console.log('次回予定がありません。');
-  }else{
-    console.log(nextLineBotDay.day);
-    console.log(getDayString(nextLineBotDay.day));
-    bot_message = user_message + '\n' + forcasts.getClosestDayForcast(nextLineBotDay.day);
-  }
   let menus = new TobaRichMenus();
+  let nextLineBotDay = days.getNextLineBotDay();
+
+  user_message = '次回予報';
+  if (nextLineBotDay === null){
+    bot_message = `${user_message}\n次回予定がありません。`;
+  }else{
+    main_message = forcasts.getClosestDayForcast(nextLineBotDay.day);
+    bot_message = `${user_message}\n${main_message}`;
+  }
   menus.setReturnText(user_message, bot_message);
+
+  user_message = '日程情報';
+  main_message = days.getLineBotInformation();
+  bot_message = `${user_message}\n${main_message}`;
+  menus.setReturnText(user_message, bot_message);
+
+  user_message = '次回未記入者';
+  if (nextLineBotDay === null){
+    bot_message = `${user_message}\n次回予定がありません。`;
+  }else{
+    let noAnswerMember = nextLineBotDay.getNoAnswerMemberIndexList();
+    main_message = days.getNamesString(noAnswerMember);
+    bot_message = `${user_message}\n${main_message}`;
+  }
+  menus.setReturnText(user_message, bot_message);
+
+  user_message = '次回参加者';
+  if (nextLineBotDay === null){
+    bot_message = `${user_message}\n次回予定がありません。`;
+  }else{
+    let participantMember = nextLineBotDay.getParticipantMemberIndexList();
+    main_message = days.getNamesString(participantMember);
+    bot_message = `${user_message}\n${main_message}`;
+  }
+  menus.setReturnText(user_message, bot_message);
+
+  menus.updateSheet();
+}
+
+function updateTobaRichMenuNextForcast() {
+  let bot_message;
+  let user_message;
+  let main_message;
+  let days = new TobaDays();
+  let forcasts = new Forcasts();
+  let menus = new TobaRichMenus();
+  let nextLineBotDay = days.getNextLineBotDay();
+
+  user_message = '次回予報';
+  if (nextLineBotDay === null){
+    bot_message = `${user_message}\n次回予定がありません。`;
+  }else{
+    main_message = forcasts.getClosestDayForcast(nextLineBotDay.day);
+    bot_message = `${user_message}\n${main_message}`;
+  }
+  menus.setReturnText(user_message, bot_message);
+
   menus.updateSheet();
 }
 
 function updateTobaRichMenuSchedule() {
-  let user_message = '日程情報';
+  let bot_message;
+  let user_message;
+  let main_message;
   let days = new TobaDays();
-  bot_message = user_message + '\n' + days.getLineBotInformation();
   let menus = new TobaRichMenus();
+
+  user_message = '日程情報';
+  main_message = days.getLineBotInformation();
+  bot_message = `${user_message}\n${main_message}`;
   menus.setReturnText(user_message, bot_message);
+
   menus.updateSheet();
 }
 
 function updateTobaRichMenuNoAnswerMemberNames() {
-  let user_message = '次回未記入者';
+  let bot_message;
+  let user_message;
+  let main_message;
   let days = new TobaDays();
+  let menus = new TobaRichMenus();
   let nextLineBotDay = days.getNextLineBotDay();
+
+  user_message = '次回未記入者';
   if (nextLineBotDay === null){
-    bot_message = user_message + '\n次回予定がありません。';
+    bot_message = `${user_message}\n次回予定がありません。`;
   }else{
     let noAnswerMember = nextLineBotDay.getNoAnswerMemberIndexList();
-    let noAnswerMemberNamesString = days.getNamesString(noAnswerMember);
-    bot_message = user_message + '\n' + noAnswerMemberNamesString;
+    main_message = days.getNamesString(noAnswerMember);
+    bot_message = `${user_message}\n${main_message}`;
   }
-  let menus = new TobaRichMenus();
   menus.setReturnText(user_message, bot_message);
+
   menus.updateSheet();
 }
 
 function updateTobaRichMenuParticipantMemberNames() {
-  let user_message = '次回参加者';
+  let bot_message;
+  let user_message;
+  let main_message;
   let days = new TobaDays();
+  let menus = new TobaRichMenus();
   let nextLineBotDay = days.getNextLineBotDay();
+
+  user_message = '次回参加者';
   if (nextLineBotDay === null){
-    bot_message = user_message + '\n次回予定がありません。';
+    bot_message = `${user_message}\n次回予定がありません。`;
   }else{
     let participantMember = nextLineBotDay.getParticipantMemberIndexList();
-    let participantMemberNamesString = days.getNamesString(participantMember);
-    bot_message = user_message + '\n' + participantMemberNamesString;
+    main_message = days.getNamesString(participantMember);
+    bot_message = `${user_message}\n${main_message}`;
   }
-  let menus = new TobaRichMenus();
   menus.setReturnText(user_message, bot_message);
+
   menus.updateSheet();
 }

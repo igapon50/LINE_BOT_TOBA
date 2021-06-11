@@ -1,15 +1,18 @@
 // スプレッドシートのURLは
 // https://docs.google.com/spreadsheets/d/XXXXXXX/edit
 // のような形になっています。XXXXXXXの部分がIDになります。
-// 天気予報の「スプレッドシート」
+// 「天気予報」のスプレッドシート
 const FORECAST_SPREADSHEET_ID = PropertiesService.getScriptProperties().getProperty('FORECAST_SPREADSHEET_ID');
 const FORECAST_SHEET_NAME = PropertiesService.getScriptProperties().getProperty('FORECAST_SHEET_NAME');
 
 function myForcastsTest() {
+  //10日予報をtenki.jpから「天気予報」スプレッドシートに取得する処理はトリガー起動しているのでここでは未確認
   let forcasts = new Forcasts();
   console.log(forcasts);
+  //10日予報の初日を取得する
   // let forcastString = forcasts.forcasts[0].getForcastString();
   // console.log(forcastString);
+  //9日後の天気予報を取得する
   let date_now = new Date();
   let target_day = new Date(date_now.setDate(date_now.getDate() + 9));
   let closestDayForcast = forcasts.getClosestDayForcast(target_day);
@@ -21,14 +24,14 @@ function myForcastsTest() {
 (function(global){
   let Forcasts = function() {
     let spreadsheet = SpreadsheetApp.openById(FORECAST_SPREADSHEET_ID);
-    let sheet = spreadsheet.getSheetByName(FORECAST_SHEET_NAME);
-    let _values = sheet.getDataRange().getValues();
+    this.sheet = spreadsheet.getSheetByName(FORECAST_SHEET_NAME);
+    let _values = this.sheet.getDataRange().getValues();
 //    this.header = new Forcast(_values[0]);
 //    _values.shift(); //ヘッダーを削除
-    this.lastColumn = sheet.getDataRange().getLastColumn();
+    this.lastColumn = this.sheet.getDataRange().getLastColumn();
     this.lastRow = _values.length;
     this.forcasts = [];
-    for(let i = 0; i < _values.length; i++){
+    for(let i in _values){
       this.forcasts[i] = new Forcast(_values[i]);
     }
   };
@@ -47,11 +50,11 @@ function myForcastsTest() {
     }
     
     //一行ずつループを回し、日時が指定日と同じかチェックする。
-    for (let no = 0; no < this.lastRow; no++){
-      target_day = this.forcasts[no].monthDay;
+    for (let i in this.forcasts){
+      target_day = this.forcasts[i].monthDay;
       let compare = Moment.moment(target_day).isSame(compare_day, 'day');
       if (compare){
-        string_list += "\n " + this.forcasts[no].getForcastString();
+        string_list += "\n " + this.forcasts[i].getForcastString();
       }
     }
     return string_list;
@@ -101,8 +104,8 @@ function getForecastFromUrlToSpreadsheet() {
   //パース
   let html_table = Parser.data(html_all).from('<table class="forecast-point-10days">').to('</table>').iterate();
   let html_list = [];
-  for (let no = 0; no < html_table.length; no++) {
-    let html_list_temp = Parser.data(html_table[no]).from('<tr>').to('</tr>').iterate();
+  for (let i in html_table) {
+    let html_list_temp = Parser.data(html_table[i]).from('<tr>').to('</tr>').iterate();
     html_list = html_list.concat(html_list_temp);
   }
   let data_MonthDay = [];
@@ -114,7 +117,7 @@ function getForecastFromUrlToSpreadsheet() {
   let data_wind_blow = [];
   let data_windspeed = [];
   //<tr>タグの単位でパースを繰り返す
-  for (let tr = 0;tr<html_list.length;tr++) {
+  for (let tr in html_list) {
     let html = html_list[tr];
     
     //<tr>タグ内の最初の<th>タグに日時があるときcontinue
@@ -147,20 +150,20 @@ function getForecastFromUrlToSpreadsheet() {
   //試してないがgetDisplayValueだと上手くいくかも？
   let row = 1;
   let count = 0;
-  for (let no = 0; no < data_time.length; no++) {
-    if (data_time[no] == '00-06') {
+  for (let i in data_time) {
+    if (data_time[i] == '00-06') {
       if (count !== data_MonthDay.lenght){
         count++;
       }
     }
     sheet.appendRow([data_MonthDay[count],
                     data_week[count],
-                    data_time[no] + '時',
-                    data_weather[no],
-                    data_prob[no],
-                    data_temp[no] + '℃',
-                    data_wind_blow[no],
-                    data_windspeed[no] + 'm/s']);
+                    data_time[i] + '時',
+                    data_weather[i],
+                    data_prob[i],
+                    data_temp[i] + '℃',
+                    data_wind_blow[i],
+                    data_windspeed[i] + 'm/s']);
     row++;
   }
   return row;
