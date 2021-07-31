@@ -18,10 +18,16 @@
 //←ボットをグループに入れる
 //みんなに転送再開の連絡する
 
+const IsTransferEMailEnabled = false; //true：EMail転送する、false：EMail転送しない
 const CHANNEL_ACCESS_TOKEN = PropertiesService.getScriptProperties().getProperty('CHANNEL_ACCESS_TOKEN');
 const STATUS_200 = ContentService.createTextOutput(JSON.stringify({'status': 200})).setMimeType(ContentService.MimeType.JSON);
 
 function myBotTest(){
+    if (IsTransferEMailEnabled){
+      console.log('EMail転送する');
+    }else{
+      console.log('EMail転送しない');
+    }
     let user_message;
     // user_message = '日程情報';
     user_message = '次回予報';
@@ -110,7 +116,9 @@ function procMessage(reply_token, mailAddressList, user_message, userDisplayName
     let menus = new TobaRichMenus();
     bot_message = menus.getReturnText(user_message);
     //メニュー呼び出しの応答をメールに転送する
-    sendEmail(mailAddressList, bot_message , 'LINE bot 翔波ちゃんネルの発言');
+    if (IsTransferEMailEnabled){
+      sendEmail(mailAddressList, bot_message , 'LINE bot 翔波ちゃんネルの発言');
+    }
     if (reply_token){
       sendLINE(reply_token, bot_message);
     }
