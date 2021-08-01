@@ -18,7 +18,6 @@
 //←ボットをグループに入れる
 //みんなに転送再開の連絡する
 
-const IsTransferEMailEnabled = false; //true：EMail転送する、false：EMail転送しない
 const CHANNEL_ACCESS_TOKEN = PropertiesService.getScriptProperties().getProperty('CHANNEL_ACCESS_TOKEN');
 const STATUS_200 = ContentService.createTextOutput(JSON.stringify({'status': 200})).setMimeType(ContentService.MimeType.JSON);
 
@@ -96,30 +95,40 @@ function doPost(e) {
       // LINEプラットフォームから送信されるHTTP POSTリクエストは、送受信に失敗しても再送されません。
       return STATUS_200;
     }
+    let IsTransferEMailEnabled; //true：EMail転送する、false：EMail転送しない
+    if (event.source.type === 'user'){
+      //ユーザー1対1のトークの場合
+      IsTransferEMailEnabled = false;
+    } else {
+      //それ以外(グループトークgroupとトークルームroom)の場合
+      IsTransferEMailEnabled = true;
+    }
     const userID = event.source.userId;
     const userDisplayName = getLINEUserName(userID);
     let user_message = event.message.text;
     let members = new TobaMembers();
     let mailAddressList = members.getLineBotTransferEMailList();
-    return procMessage(reply_token, mailAddressList, user_message, userDisplayName);
+    return procMessage(reply_token, IsTransferEMailEnabled, mailAddressList, user_message, userDisplayName);
   }
 }
 
 //メッセージプロシージャ
-function procMessage(reply_token, mailAddressList, user_message, userDisplayName){
+function procMessage(reply_token, IsTransferEMailEnabled, mailAddressList, user_message, userDisplayName){
   let bot_message;
-  //受け取ったメッセージはメールに転送する(メニュー呼び出しメッセージ含む)
-  sendEmail(mailAddressList, user_message, userDisplayName + 'の発言');
+  if (IsTransferEMailEnabled){
+    //botが受け取ったメッセージはメールに転送する(メニュー呼び出しメッセージ含む)
+    sendEmail(mailAddressList, user_message, userDisplayName + 'の発言');
+  }
 
-  //メニュー呼び出し処理、メニュー以外の応答の時は、ボットはチャットでしゃべらない
   if (['次回予報','日程情報','次回未記入者','次回参加者'].includes(user_message)){
     let menus = new TobaRichMenus();
     bot_message = menus.getReturnText(user_message);
-    //メニュー呼び出しの応答をメールに転送する
     if (IsTransferEMailEnabled){
+      //botの応答をメールに転送する
       sendEmail(mailAddressList, bot_message , 'LINE bot 翔波ちゃんネルの発言');
     }
     if (reply_token){
+      //botの応答をLINEチャットに送る
       sendLINE(reply_token, bot_message);
     }
   }
