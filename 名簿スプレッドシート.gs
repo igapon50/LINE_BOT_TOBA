@@ -5,8 +5,8 @@
 const MEMBER_SPREADSHEET_ID = PropertiesService.getScriptProperties().getProperty('MEMBER_SPREADSHEET_ID');
 const MEMBER_SHEET_NAME = PropertiesService.getScriptProperties().getProperty('MEMBER_SHEET_NAME');
 
-function myTobaMembersTest() {
-  let members = new TobaMembers();
+function myMembersTest() {
+  let members = new Members();
   console.log(members);
   let lineBotTransferEMaillist = members.getLineBotTransferEMailList();
   console.log(lineBotTransferEMaillist);
@@ -18,23 +18,23 @@ function myTobaMembersTest() {
 // 即時関数化して、いろいろ見えないようにする
 // https://tonari-it.com/gas-class-immediate-function/
 (function(global){
-  let TobaMembers = function() {
+  let Members = function() {
     let spreadsheet = SpreadsheetApp.openById(MEMBER_SPREADSHEET_ID);
     this.sheet = spreadsheet.getSheetByName(MEMBER_SHEET_NAME);
     let _values = this.sheet.getDataRange().getValues();
-    this.header = new TobaMember(_values[0]);
+    this.header = new Member(_values[0]);
     _values.shift(); //ヘッダーを削除
     this.lastColumn = this.sheet.getDataRange().getLastColumn();
     this.lastRow = _values.length;
     this.members = [];
     for(let i in _values){
-      this.members[i] = new TobaMember(_values[i]);
+      this.members[i] = new Member(_values[i]);
     }
 
   };
 
 //LINEボット列に値が入っている行のリストを作って返す。
-  TobaMembers.prototype.getLineBotTransferEMailList = function(){
+  Members.prototype.getLineBotTransferEMailList = function(){
     let lineBotTransferEMaillist = [];
     let count = 0;
     for(let i in this.members){
@@ -45,11 +45,11 @@ function myTobaMembersTest() {
     return lineBotTransferEMaillist;
   };
 
-  global.TobaMembers = TobaMembers;
+  global.Members = Members;
 })(this);
 
 (function(global){
-  let TobaMember = function(record) {
+  let Member = function(record) {
     [this.name,
     this.birthday,
     this.age,
@@ -72,10 +72,10 @@ function myTobaMembersTest() {
 //数え年
 // 誕生日前　→　満年齢＋２歳
 // 誕生日後　→　満年齢＋１歳
-  TobaMember.prototype.getCountingYears = function(){
+  Member.prototype.getCountingYears = function(){
     let day = new Date();
     return day.getFullYear() - this.birthday.getFullYear() + 2;
   };
 
-  global.TobaMember = TobaMember;
+  global.Member = Member;
 })(this);

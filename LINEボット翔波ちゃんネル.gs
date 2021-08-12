@@ -27,7 +27,7 @@ function myBotTest(){
     user_message = '次回予報';
     // user_message = '次回未記入者';
     // user_message = '次回参加者';
-    let menus = new TobaRichMenus();
+    let menus = new RichMenus();
     bot_message = menus.getReturnText(user_message);
     console.log(bot_message);
 }
@@ -42,21 +42,22 @@ function doGet(e) {
 // リクエストボディ
 // https://developers.line.biz/ja/reference/messaging-api/#request-body
 function doPost(e) {
+  let IsTransferEMailEnabled = true; //true：EMail転送する、false：EMail転送しない
+  let reply_token = '';
+  let user_message = '';
+  let userDisplayName = ''
   if (!e){
     //引数が未定義ならテスト動作とする
-    let reply_token = '';
-    let user_message;
-    let members = new TobaMembers();
-    let IsTransferEMailEnabled = true;
+    let members = new Members();
     let mailAddressList = members.getLineBotTransferEMailList();
     console.log(mailAddressList);
     mailAddressList = getPropertyArray('TEST_MAILADDRESS');
-    const userDisplayName = 'userDisplayName';
     user_message = '次回予報';
     // user_message = '日程情報';
     // user_message = '次回未記入者';
     // user_message = '次回参加者';
     // user_message = 'メールに転送されるLINEのメッセージ';
+    userDisplayName = 'userDisplayName';
     return procMessage(reply_token, IsTransferEMailEnabled, mailAddressList, user_message, userDisplayName);
   }else{
     const contents = e.postData.contents;
@@ -86,12 +87,11 @@ function doPost(e) {
       //LINEからTEXT以外が送られた場合
       return STATUS_200;
     }
-    const reply_token = event.replyToken;
+    reply_token = event.replyToken;
     if (!reply_token) {
       // LINEプラットフォームから送信されるHTTP POSTリクエストは、送受信に失敗しても再送されません。
       return STATUS_200;
     }
-    let IsTransferEMailEnabled; //true：EMail転送する、false：EMail転送しない
     if (event.source.type === 'user'){
       //ユーザー1対1のトークの場合
       IsTransferEMailEnabled = false;
@@ -99,11 +99,11 @@ function doPost(e) {
       //それ以外(グループトークgroupとトークルームroom)の場合
       IsTransferEMailEnabled = true;
     }
-    const userID = event.source.userId;
-    const userDisplayName = getLINEUserName(userID);
-    let user_message = event.message.text;
-    let members = new TobaMembers();
+    let members = new Members();
     let mailAddressList = members.getLineBotTransferEMailList();
+    user_message = event.message.text;
+    const userID = event.source.userId;
+    userDisplayName = getLINEUserName(userID);
     return procMessage(reply_token, IsTransferEMailEnabled, mailAddressList, user_message, userDisplayName);
   }
 }
@@ -117,7 +117,7 @@ function procMessage(reply_token, IsTransferEMailEnabled, mailAddressList, user_
   }
 
   if (['次回予報','日程情報','次回未記入者','次回参加者'].includes(user_message)){
-    let menus = new TobaRichMenus();
+    let menus = new RichMenus();
     bot_message = menus.getReturnText(user_message);
     if (IsTransferEMailEnabled){
       //botの応答をメールに転送する
@@ -131,13 +131,13 @@ function procMessage(reply_token, IsTransferEMailEnabled, mailAddressList, user_
   return STATUS_200;
 }
 
-function updateTobaRichMenuAll() {
+function updateRichMenuAll() {
   let user_message;
   let bot_message;
   let main_message;
-  let days = new TobaDays();
+  let days = new Schedules();
   let forcasts = new Forcasts();
-  let menus = new TobaRichMenus();
+  let menus = new RichMenus();
   let nextLineBotDay = days.getNextLineBotDay();
 
   user_message = '次回予報';
@@ -177,13 +177,13 @@ function updateTobaRichMenuAll() {
   menus.updateSheet();
 }
 
-function updateTobaRichMenuNextForcast() {
+function updateRichMenuNextForcast() {
   let bot_message;
   let user_message;
   let main_message;
-  let days = new TobaDays();
+  let days = new Schedules();
   let forcasts = new Forcasts();
-  let menus = new TobaRichMenus();
+  let menus = new RichMenus();
   let nextLineBotDay = days.getNextLineBotDay();
 
   user_message = '次回予報';
@@ -198,12 +198,12 @@ function updateTobaRichMenuNextForcast() {
   menus.updateSheet();
 }
 
-function updateTobaRichMenuSchedule() {
+function updateRichMenuSchedule() {
   let bot_message;
   let user_message;
   let main_message;
-  let days = new TobaDays();
-  let menus = new TobaRichMenus();
+  let days = new Schedules();
+  let menus = new RichMenus();
 
   user_message = '日程情報';
   main_message = days.getLineBotInformation();
@@ -213,12 +213,12 @@ function updateTobaRichMenuSchedule() {
   menus.updateSheet();
 }
 
-function updateTobaRichMenuNoAnswerMemberNames() {
+function updateRichMenuNoAnswerMemberNames() {
   let bot_message;
   let user_message;
   let main_message;
-  let days = new TobaDays();
-  let menus = new TobaRichMenus();
+  let days = new Schedules();
+  let menus = new RichMenus();
   let nextLineBotDay = days.getNextLineBotDay();
 
   user_message = '次回未記入者';
@@ -234,12 +234,12 @@ function updateTobaRichMenuNoAnswerMemberNames() {
   menus.updateSheet();
 }
 
-function updateTobaRichMenuParticipantMemberNames() {
+function updateRichMenuParticipantMemberNames() {
   let bot_message;
   let user_message;
   let main_message;
-  let days = new TobaDays();
-  let menus = new TobaRichMenus();
+  let days = new Schedules();
+  let menus = new RichMenus();
   let nextLineBotDay = days.getNextLineBotDay();
 
   user_message = '次回参加者';

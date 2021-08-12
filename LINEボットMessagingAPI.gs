@@ -24,6 +24,13 @@ const DRIVE_FILE_ID = PropertiesService.getScriptProperties().getProperty('DRIVE
 //   return richMenuID;
 // }
 
+//メニューを取得する
+function myGetRichMenuTest(){
+  let richMenuID = getRichmenus();
+  console.log(richMenuID);
+  return richMenuID;
+}
+
 /**
  * リッチメニューを作って、確認して、画像を上げて、リッチメニューを削除する
  * GoogleDriveに格納している画像ファイルを、JPEGファイルとしてアップロードする
@@ -219,7 +226,7 @@ function makeRichmenu_1200x810in4Size() {
 
   let json = UrlFetchApp.fetch(url, options);
   json = JSON.parse(json);
-  console.log(json.richMenuID);
+//  console.log(json.richMenuID);
   return json.richMenuId;
 }
 
@@ -238,7 +245,7 @@ function setDefaultRichmenu(richMenuID) {
 
   let json = UrlFetchApp.fetch(url, options);
   json = JSON.parse(json);
-  console.log(json);
+//  console.log(json);
   return json;
 }
 
@@ -296,7 +303,7 @@ function setImage_Richmenu_Jpeg(richmenuId, drive_fileId) {
 
   let json = UrlFetchApp.fetch(url, options);
   json = JSON.parse(json);
-  console.log(json);
+//  console.log(json);
   return json;
 }
 
@@ -319,7 +326,7 @@ function getRichmenus() {
 
   let json = UrlFetchApp.fetch(url, options);
   json = JSON.parse(json);
-  console.log(json);
+//  console.log(json);
   return json;
 }
 
@@ -344,6 +351,6 @@ function deleteRichmenu(richmenuId) {
 
   let json = UrlFetchApp.fetch(url, options);
   json = JSON.parse(json);
-  console.log(json);
+//  console.log(json);
   return json;
 }

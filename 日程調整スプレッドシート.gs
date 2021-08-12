@@ -5,8 +5,8 @@
 const SCHEDULE_SPREADSHEET_ID = PropertiesService.getScriptProperties().getProperty('SCHEDULE_SPREADSHEET_ID');
 const SCHEDULE_SHEET_NAME = PropertiesService.getScriptProperties().getProperty('SCHEDULE_SHEET_NAME');
 
-function myDaysTest(){
-  let days = new TobaDays();
+function mySchedulesTest(){
+  let days = new Schedules();
   console.log(days);
   let list = days.getLineBotList();
   console.log(list);
@@ -33,24 +33,24 @@ function myDaysTest(){
 // 即時関数化して、いろいろ見えないようにする
 // https://tonari-it.com/gas-class-immediate-function/
 (function(global){
-  let TobaDays = function() {
+  let Schedules = function() {
     let spreadsheet = SpreadsheetApp.openById(SCHEDULE_SPREADSHEET_ID);
     this.sheet = spreadsheet.getSheetByName(SCHEDULE_SHEET_NAME);
     let _values = this.sheet.getDataRange().getValues();
-    this.header = new TobaDay(_values[0]);
+    this.header = new Schedule(_values[0]);
     _values.shift(); //ヘッダーを削除
     this.lastColumn = this.sheet.getDataRange().getLastColumn();
     this.lastRow = _values.length;
     this.days = [];
     for(let i in _values){
-      this.days[i] = new TobaDay(_values[i]);
+      this.days[i] = new Schedule(_values[i]);
     }
 
   };
 
 //次回のLINEボット列に値が入っている行のインスタンスを返す。
 //次回がない時、nullを返す。
-  TobaDays.prototype.getNextLineBotDay = function(){
+  Schedules.prototype.getNextLineBotDay = function(){
     let lineBotList = this.getLineBotList();
     let date_now = new Date();
 //    let yesterday = Moment.moment(date_now).subtract(1,'d');
@@ -64,7 +64,7 @@ function myDaysTest(){
   };
 
 //メンバーインデックスリストから、名前文字列を作成して返す。
-  TobaDays.prototype.getNamesString = function(list){
+  Schedules.prototype.getNamesString = function(list){
     let stringlist = [];
     for(let i in list){
       stringlist += '　' + this.header.member[list[i]].replace('\n', ' ');
@@ -73,7 +73,7 @@ function myDaysTest(){
   };
 
 //LINEボット列に値が入っている行のリストを作って返す。
-  TobaDays.prototype.getLineBotList = function(){
+  Schedules.prototype.getLineBotList = function(){
     let daylist = [];
     let count = 0;
     for(let i in this.days){
@@ -85,7 +85,7 @@ function myDaysTest(){
   };
 
 //日程情報文字列を作って返す。
-  TobaDays.prototype.getLineBotInformation = function(){
+  Schedules.prototype.getLineBotInformation = function(){
     let stringlist = [];
     let lineBotList = this.getLineBotList();
     let count = 0;
@@ -104,11 +104,11 @@ function myDaysTest(){
     return stringlist;
   };
 
-  global.TobaDays = TobaDays;
+  global.Schedules = Schedules;
 })(this);
 
 (function(global){
-  let TobaDay = function(record) {
+  let Schedule = function(record) {
     [this.day,
     this.week,
     this.eventName,
@@ -122,7 +122,7 @@ function myDaysTest(){
   };
 
 //日程調整が参加のメンバーインデックスを返す。
-  TobaDay.prototype.getParticipantMemberIndexList = function(){
+  Schedule.prototype.getParticipantMemberIndexList = function(){
     let indexlist = [];
     let count = 0;
     for(let i in this.member){
@@ -136,7 +136,7 @@ function myDaysTest(){
   };
 
 //日程調整が空欄のメンバーインデックスを返す。
-  TobaDay.prototype.getNoAnswerMemberIndexList = function(){
+  Schedule.prototype.getNoAnswerMemberIndexList = function(){
     let indexlist = [];
     let count = 0;
     for(let i in this.member){
@@ -147,5 +147,5 @@ function myDaysTest(){
     return indexlist;
   };
 
-  global.TobaDay = TobaDay;
+  global.Schedule = Schedule;
 })(this);

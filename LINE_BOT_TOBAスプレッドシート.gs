@@ -2,11 +2,11 @@
 // https://docs.google.com/spreadsheets/d/XXXXXXX/edit
 // のような形になっています。XXXXXXXの部分がIDになります。
 // 「LINE_BOT_TOBA」のスプレッドシート
-const TOBARICHMENUS_SPREADSHEET_ID = PropertiesService.getScriptProperties().getProperty('TOBARICHMENUS_SPREADSHEET_ID');
-const TOBARICHMENUS_SHEET_NAME = PropertiesService.getScriptProperties().getProperty('TOBARICHMENUS_SHEET_NAME');
+const RICHMENUS_SPREADSHEET_ID = PropertiesService.getScriptProperties().getProperty('RICHMENUS_SPREADSHEET_ID');
+const RICHMENUS_SHEET_NAME = PropertiesService.getScriptProperties().getProperty('RICHMENUS_SHEET_NAME');
 
-function myTobaRichMenusTest() {
-  let menus = new TobaRichMenus();
+function myRichMenusTest() {
+  let menus = new RichMenus();
   console.log(menus);
   console.log(menus.menus['日程情報']);
   console.log(menus.menus['次回予報']);
@@ -41,11 +41,11 @@ function myTobaRichMenusTest() {
 // 即時関数化して、いろいろ見えないようにする
 // https://tonari-it.com/gas-class-immediate-function/
 (function(global){
-  let TobaRichMenus = function() {
-    let spreadsheet = SpreadsheetApp.openById(TOBARICHMENUS_SPREADSHEET_ID);
-    this.sheet = spreadsheet.getSheetByName(TOBARICHMENUS_SHEET_NAME);
+  let RichMenus = function() {
+    let spreadsheet = SpreadsheetApp.openById(RICHMENUS_SPREADSHEET_ID);
+    this.sheet = spreadsheet.getSheetByName(RICHMENUS_SHEET_NAME);
     let _values = this.sheet.getDataRange().getValues();
-    this.header = new TobaRichMenu(_values[0]);
+    this.header = new RichMenu(_values[0]);
     _values.shift(); //ヘッダーを削除
     this.lastColumn = this.sheet.getDataRange().getLastColumn();
     this.lastRow = _values.length;
@@ -62,7 +62,7 @@ function myTobaRichMenusTest() {
 //要求するリッチメニューをパラメータで指定する。
 //パラメータの文字列が100文字を超えたらnullを返す。
 //応答文が無かったらnullを返す。
-  TobaRichMenus.prototype.getReturnText = function(richMenu){
+  RichMenus.prototype.getReturnText = function(richMenu){
     if (richMenu === null || richMenu === undefined || richMenu === ''){
       return null;
     }
@@ -73,7 +73,7 @@ function myTobaRichMenusTest() {
   };
 
 //リッチメニューの応答文を更新する。
-  TobaRichMenus.prototype.setReturnText = function(richMenu, returnText){
+  RichMenus.prototype.setReturnText = function(richMenu, returnText){
     if (richMenu.length > 100 ){
       return false;
     }
@@ -85,7 +85,7 @@ function myTobaRichMenusTest() {
   };
 
 //リッチメニューの応答文をスプレッドシートに反映する。
-  TobaRichMenus.prototype.updateSheet = function(){
+  RichMenus.prototype.updateSheet = function(){
     this.sheet.getDataRange().clearContent();
     this.sheet.appendRow([this.header.richMenu,
                          this.header.returnText]);
@@ -95,14 +95,14 @@ function myTobaRichMenusTest() {
     }
   };
 
-  global.TobaRichMenus = TobaRichMenus;
+  global.RichMenus = RichMenus;
 })(this);
 
 (function(global){
-  let TobaRichMenu = function(record) {
+  let RichMenu = function(record) {
     [this.richMenu,
     this.returnText] = record;
   };
 
-  global.TobaRichMenu = TobaRichMenu;
+  global.RichMenu = RichMenu;
 })(this);
