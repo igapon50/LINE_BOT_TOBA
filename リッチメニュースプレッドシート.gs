@@ -1,7 +1,7 @@
 // スプレッドシートのURLは
 // https://docs.google.com/spreadsheets/d/XXXXXXX/edit
 // のような形になっています。XXXXXXXの部分がIDになります。
-// 「LINE_BOT_TOBA」のスプレッドシート
+// 「リッチメニュー」のスプレッドシート
 const RICHMENUS_SPREADSHEET_ID = PropertiesService.getScriptProperties().getProperty('RICHMENUS_SPREADSHEET_ID');
 const RICHMENUS_SHEET_NAME = PropertiesService.getScriptProperties().getProperty('RICHMENUS_SHEET_NAME');
 
