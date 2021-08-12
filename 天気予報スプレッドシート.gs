@@ -42,10 +42,10 @@ function myForcastsTest() {
   Forcasts.prototype.getClosestDayForcast = function(compare_day){
     let string_list = [];
     let date_now = new Date();
-    let target_day = new Date(date_now.setDate(date_now.getDate() + 10));
+    let target_day = new Date(date_now.setDate(date_now.getDate() + 11));
     string_list += getDayString(compare_day) + FORECAST_SHEET_NAME + "の天気予報(引用元tenki.jp)";
     if (Moment.moment(compare_day).isAfter(target_day)){
-      string_list += "\n次の予定は10日以上先なので、まだ予報が出ていません。";
+      string_list += "\n次の予定は11日以上先なので、まだ予報が出ていません。";
       return string_list;
     }
     

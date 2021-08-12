@@ -22,11 +22,6 @@ const CHANNEL_ACCESS_TOKEN = PropertiesService.getScriptProperties().getProperty
 const STATUS_200 = ContentService.createTextOutput(JSON.stringify({'status': 200})).setMimeType(ContentService.MimeType.JSON);
 
 function myBotTest(){
-    if (IsTransferEMailEnabled){
-      console.log('EMail転送する');
-    }else{
-      console.log('EMail転送しない');
-    }
     let user_message;
     // user_message = '日程情報';
     user_message = '次回予報';
@@ -52,16 +47,17 @@ function doPost(e) {
     let reply_token = '';
     let user_message;
     let members = new TobaMembers();
+    let IsTransferEMailEnabled = true;
     let mailAddressList = members.getLineBotTransferEMailList();
     console.log(mailAddressList);
-    mailAddressList = ['igapon@gmail.com'];
+    mailAddressList = getPropertyArray('TEST_MAILADDRESS');
     const userDisplayName = 'userDisplayName';
     user_message = '次回予報';
     // user_message = '日程情報';
     // user_message = '次回未記入者';
     // user_message = '次回参加者';
     // user_message = 'メールに転送されるLINEのメッセージ';
-    return procMessage(reply_token, mailAddressList, user_message, userDisplayName);
+    return procMessage(reply_token, IsTransferEMailEnabled, mailAddressList, user_message, userDisplayName);
   }else{
     const contents = e.postData.contents;
 

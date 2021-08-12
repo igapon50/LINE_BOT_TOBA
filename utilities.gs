@@ -10,10 +10,6 @@ function myUtilitiesTest(){
   let success = ContentService.createTextOutput("SUCCESS");
   console.log(success.getContent());
 
-  //スクリプトプロパティのセット
-  // let data = [ 'igapon@gmail.com', 'igapon+test@gmail.com' ];
-  // let name = "TEST_MAILADDRESS";
-  // setPropertyArray(name, data);
   //スクリプトプロパティを取得
   console.log(PropertiesService.getScriptProperties().getProperties());
 
