@@ -144,10 +144,10 @@ function getForecastFromUrlToSpreadsheet() {
   
   //スプレッドシートをクリアしてから記載する
   sheet.clear();
+  sheet.getRange('B:H').setNumberFormat('@'); //文字列扱いする列=B:H
   //降水確率をsetValueすると数値セルになる。
   //数値セルのままgetValueすると、例えば10%が0.1になってしまう。
-  //書式をクリアして文字列の%にしておく必要あり。
-  //試してないがgetDisplayValueだと上手くいくかも？
+  //書式をクリアして文字列の%にしておく。
   let row = 1;
   let count = 0;
   for (let i in data_time) {
@@ -156,14 +156,16 @@ function getForecastFromUrlToSpreadsheet() {
         count++;
       }
     }
-    sheet.appendRow([data_MonthDay[count],
+    let lastRow = sheet.getLastRow() + 1;
+    let range = sheet.getRange(lastRow, 1, 1, 8); //列数=8
+    range.setValues([[data_MonthDay[count],
                     data_week[count],
                     data_time[i] + '時',
                     data_weather[i],
                     data_prob[i],
                     data_temp[i] + '℃',
                     data_wind_blow[i],
-                    data_windspeed[i] + 'm/s']);
+                    data_windspeed[i] + 'm/s']]);
     row++;
   }
   return row;
