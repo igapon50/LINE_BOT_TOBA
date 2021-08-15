@@ -84,9 +84,22 @@ function sendLINE(reply_token, message){
   return false;
 }
 
-//メールにメッセージを送る
+//メールにメッセージを宛先まとめて送る
 //無料のGoogleアカウントの場合、GASのメール送信回数は1日100通が上限
 function sendEmail(mailAddressList, user_message, userDisplayName) {
+  if (mailAddressList) {
+    let subject = 'LINEチャットからの転送';
+    let body = `${user_message}`;
+    let options = {name: `${userDisplayName}`};
+    GmailApp.sendEmail(mailAddressList.join(','), subject, body, options);
+    return true;
+  }
+  return false;
+}
+
+//メールにメッセージを宛先個別に送る
+//無料のGoogleアカウントの場合、GASのメール送信回数は1日100通が上限
+function sendEmailIndividually(mailAddressList, user_message, userDisplayName) {
   if (mailAddressList) {
     let subject = 'LINEチャットからの転送';
     let body = `${user_message}`;
