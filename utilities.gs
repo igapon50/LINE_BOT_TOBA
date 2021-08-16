@@ -15,7 +15,9 @@ function myUtilitiesTest(){
 
   //sendLINE()は、LINEから呼び出されないとテストできないので未実施
   let mailAddressList = getPropertyArray('TEST_MAILADDRESS');
-  let ret = sendEmail(mailAddressList,'user_message','userDisplayName');
+  let imageID = getPropertyArray('TEST_IMAGE_ID');
+  let attachImg = getGoogleDriveImage(imageID); //画像Brob
+  let ret = sendEmail(mailAddressList,'user_message','userDisplayName', attachImg);
   console.log(ret);
   let day = new Date();
   console.log(getDayString(day));
@@ -86,11 +88,22 @@ function sendLINE(reply_token, message){
 
 //メールにメッセージを宛先まとめて送る
 //無料のGoogleアカウントの場合、GASのメール送信回数は1日100通が上限
-function sendEmail(mailAddressList, user_message, userDisplayName) {
+function sendEmail(mailAddressList, user_message, userDisplayName, attachImg) {
   if (mailAddressList) {
     let subject = 'LINEチャットからの転送';
-    let body = `${user_message}`;
-    let options = {name: `${userDisplayName}`};
+    let body = '';
+    if (user_message) {
+      body = `${user_message}`;
+    }
+    let options = {};
+    if (userDisplayName){
+      if (attachImg){
+        options = {name: `${userDisplayName}`, attachments : attachImg};
+      }
+      else{
+        options = {name: `${userDisplayName}`};
+      }
+    }
     GmailApp.sendEmail(mailAddressList.join(','), subject, body, options);
     return true;
   }
@@ -99,17 +112,54 @@ function sendEmail(mailAddressList, user_message, userDisplayName) {
 
 //メールにメッセージを宛先個別に送る
 //無料のGoogleアカウントの場合、GASのメール送信回数は1日100通が上限
-function sendEmailIndividually(mailAddressList, user_message, userDisplayName) {
+function sendEmailIndividually(mailAddressList, user_message, userDisplayName, attachImg) {
   if (mailAddressList) {
     let subject = 'LINEチャットからの転送';
-    let body = `${user_message}`;
-    let options = {name: `${userDisplayName}`};
+    let body = '';
+    if (user_message) {
+      body = `${user_message}`;
+    }
+    let options = {};
+    if (userDisplayName){
+      if (attachImg){
+        options = {name: `${userDisplayName}`, attachments : attachImg};
+      }
+      else{
+        options = {name: `${userDisplayName}`};
+      }
+    }
     for (let i in mailAddressList){
       GmailApp.sendEmail(mailAddressList[i], subject, body, options);
     }
     return true;
   }
   return false;
+}
+
+//LINEのimageがidの時、画像のBlobデータを取得して返す。
+//idのimageが取得できない時はnullを返す
+function getLINEImage(id) {
+  //画像取得用エンドポイント
+  var url = 'https://api-data.line.me/v2/bot/message/' + id + '/content';
+  var data = UrlFetchApp.fetch(url,{
+    'headers': {
+      'Authorization' :  'Bearer ' + CHANNEL_ACCESS_TOKEN,
+    },
+    'method': 'get'
+  });
+  if (data) return null;
+  var img = data.getBlob()
+  //ファイル名を被らせないように、今日のDateのミリ秒をファイル名にしています
+  img.getAs('image/png').setName(Number(new Date()) + '.png');
+  return img;
+}
+
+//LINEのimageがidの時、画像のBlobデータを取得する。
+function getGoogleDriveImage(id) {
+  //画像取得用エンドポイント
+  //ファイル名を被らせないように、今日のDateのミリ秒をファイル名にしています
+  var img = DriveApp.getFileById(id).getBlob();
+  return img;
 }
 
 // https://developers.line.biz/ja/reference/messaging-api/#signature-validation
