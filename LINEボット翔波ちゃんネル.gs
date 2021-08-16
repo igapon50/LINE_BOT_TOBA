@@ -52,13 +52,17 @@ function doPost(e) {
     let mailAddressList = members.getLineBotTransferEMailList();
     console.log(mailAddressList);
     mailAddressList = getPropertyArray('TEST_MAILADDRESS');
+    const type = 'text';
     user_message = '次回予報';
     // user_message = '日程情報';
     // user_message = '次回未記入者';
     // user_message = '次回参加者';
     // user_message = 'メールに転送されるLINEのメッセージ';
+    let attachImg = null
     userDisplayName = 'userDisplayName';
-    return procMessage(reply_token, IsTransferEMailEnabled, mailAddressList, user_message, userDisplayName);
+    receiveMessage(IsTransferEMailEnabled, mailAddressList, user_message, attachImg, userDisplayName);
+    replayMessage(reply_token, IsTransferEMailEnabled, mailAddressList, user_message);
+    return STATUS_200;
   }else{
     const contents = e.postData.contents;
 
@@ -82,11 +86,6 @@ function doPost(e) {
       // https://developers.line.biz/ja/reference/messaging-api/#response
       return STATUS_200;
     }
-    const type = event.message.type;
-    if (type !== 'text') {
-      //LINEからTEXT以外が送られた場合
-      return STATUS_200;
-    }
     reply_token = event.replyToken;
     if (!reply_token) {
       // LINEプラットフォームから送信されるHTTP POSTリクエストは、送受信に失敗しても再送されません。
@@ -99,29 +98,41 @@ function doPost(e) {
       //それ以外(グループトークgroupとトークルームroom)の場合
       IsTransferEMailEnabled = true;
     }
-    let members = new Members();
-    let mailAddressList = members.getLineBotTransferEMailList();
-    user_message = event.message.text;
-    const userID = event.source.userId;
-    userDisplayName = getLINEUserName(userID);
-    return procMessage(reply_token, IsTransferEMailEnabled, mailAddressList, user_message, userDisplayName);
+    const type = event.message.type;
+    if (type === 'image' && type === 'text') {
+      //LINEからimageとtextが送られた場合
+      let members = new Members();
+      let mailAddressList = members.getLineBotTransferEMailList();
+      user_message = event.message.text;
+      let attachImg = null;
+      if (type === 'image')attachImg = getLINEImage(event.message.id); //画像Brob
+      const userID = event.source.userId;
+      userDisplayName = getLINEUserName(userID);
+      receiveMessage(IsTransferEMailEnabled, mailAddressList, user_message, attachImg, userDisplayName);
+      replayMessage(reply_token, IsTransferEMailEnabled, mailAddressList, user_message);
+    }
+    return STATUS_200;
   }
 }
 
-//メッセージプロシージャ
-function procMessage(reply_token, IsTransferEMailEnabled, mailAddressList, user_message, userDisplayName){
-  let bot_message;
+//受信メッセージ
+function receiveMessage(IsTransferEMailEnabled, mailAddressList, user_message, attachImg, userDisplayName){
   if (IsTransferEMailEnabled){
     //botが受け取ったメッセージはメールに転送する(メニュー呼び出しメッセージ含む)
-    sendEmail(mailAddressList, user_message, userDisplayName + 'の発言');
+    sendEmail(mailAddressList, user_message, userDisplayName + 'の発言', attachImg);
   }
+  return STATUS_200;
+}
 
+//応答メッセージ
+function replayMessage(reply_token, IsTransferEMailEnabled, mailAddressList, user_message){
+  let bot_message;
   if (['次回予報','日程情報','次回未記入者','次回参加者'].includes(user_message)){
     let menus = new RichMenus();
     bot_message = menus.getReturnText(user_message);
     if (IsTransferEMailEnabled){
       //botの応答をメールに転送する
-      sendEmail(mailAddressList, bot_message , 'LINE bot 翔波ちゃんネルの発言');
+      sendEmail(mailAddressList, bot_message , 'LINE bot 翔波ちゃんネルの発言', null);
     }
     if (reply_token){
       //botの応答をLINEチャットに送る
