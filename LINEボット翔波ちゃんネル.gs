@@ -21,15 +21,35 @@
 const CHANNEL_ACCESS_TOKEN = PropertiesService.getScriptProperties().getProperty('CHANNEL_ACCESS_TOKEN');
 const STATUS_200 = ContentService.createTextOutput(JSON.stringify({'status': 200})).setMimeType(ContentService.MimeType.JSON);
 
-function myBotTest(){
+function Test_myBot(){
+  // ボットが応答するメッセージをログに出して確認する
     let user_message;
+    user_message = '不一致';
     // user_message = '日程情報';
-    user_message = '次回予報';
+    // user_message = '次回予報';
     // user_message = '次回未記入者';
     // user_message = '次回参加者';
     let menus = new RichMenus();
     bot_message = menus.getReturnText(user_message);
     console.log(bot_message);
+}
+
+function Test_replayMessage(){
+  // 応答処理だけテストする
+  let reply_token = '';
+  let IsTransferEMailEnabled = false; //true：EMail転送する、false：EMail転送しない
+  let user_message;
+  //user_message = '';
+  //user_message = null;
+  //user_message = undefined;
+  //user_message = '不一致';
+  user_message = '日程情報';
+  //user_message = '次回予報';
+  //user_message = '次回未記入者';
+  //user_message = '次回参加者';
+  let userDisplayName = 'test_user'
+  let mailAddressList = getPropertyArray('TEST_MAILADDRESS');
+  replayMessage(reply_token, IsTransferEMailEnabled, mailAddressList, user_message);
 }
 
 // ブラウザでスクリプトのURLにアクセスすると、GETで通知が来る
@@ -127,9 +147,9 @@ function receiveMessage(IsTransferEMailEnabled, mailAddressList, user_message, a
 //応答メッセージ
 function replayMessage(reply_token, IsTransferEMailEnabled, mailAddressList, user_message){
   let bot_message;
-  if (['次回予報','日程情報','次回未記入者','次回参加者'].includes(user_message)){
-    let menus = new RichMenus();
-    bot_message = menus.getReturnText(user_message);
+  let menus = new RichMenus();
+  bot_message = menus.getReturnText(user_message);
+  if (bot_message){
     if (IsTransferEMailEnabled){
       //botの応答をメールに転送する
       sendEmail(mailAddressList, bot_message , 'LINE bot 翔波ちゃんネルの発言', null);

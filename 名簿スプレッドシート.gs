@@ -5,7 +5,7 @@
 const MEMBER_SPREADSHEET_ID = PropertiesService.getScriptProperties().getProperty('MEMBER_SPREADSHEET_ID');
 const MEMBER_SHEET_NAME = PropertiesService.getScriptProperties().getProperty('MEMBER_SHEET_NAME');
 
-function myMembersTest() {
+function Test_myMembers() {
   let members = new Members();
   console.log(members);
   let lineBotTransferEMaillist = members.getLineBotTransferEMailList();

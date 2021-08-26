@@ -5,7 +5,7 @@
 const SCHEDULE_SPREADSHEET_ID = PropertiesService.getScriptProperties().getProperty('SCHEDULE_SPREADSHEET_ID');
 const SCHEDULE_SHEET_NAME = PropertiesService.getScriptProperties().getProperty('SCHEDULE_SHEET_NAME');
 
-function mySchedulesTest(){
+function Test_mySchedules(){
   let days = new Schedules();
   console.log(days);
   let list = days.getLineBotList();
