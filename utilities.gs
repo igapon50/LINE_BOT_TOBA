@@ -2,7 +2,7 @@ const CHANNEL_SECRET = PropertiesService.getScriptProperties().getProperty('CHAN
 const TEST_USERID = PropertiesService.getScriptProperties().getProperty('TEST_USERID');
 const TEST_MAILADDRESS = PropertiesService.getScriptProperties().getProperty('TEST_MAILADDRESS');
 
-function myUtilitiesTest(){
+function Test_myUtilities(){
   //APIリターン値のテスト
   console.log(JSON.stringify({'content': 'post ok'}));
   let postok = ContentService.createTextOutput(JSON.stringify({'content': 'post ok'})).setMimeType(ContentService.MimeType.JSON);

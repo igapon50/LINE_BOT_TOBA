@@ -5,7 +5,7 @@
 const FORECAST_SPREADSHEET_ID = PropertiesService.getScriptProperties().getProperty('FORECAST_SPREADSHEET_ID');
 const FORECAST_SHEET_NAME = PropertiesService.getScriptProperties().getProperty('FORECAST_SHEET_NAME');
 
-function myForcastsTest() {
+function Test_myForcasts() {
   //10日予報をtenki.jpから「天気予報」スプレッドシートに取得する処理はトリガー起動しているのでここでは未確認
   let forcasts = new Forcasts();
   console.log(forcasts);
@@ -43,7 +43,7 @@ function myForcastsTest() {
     let string_list = [];
     let date_now = new Date();
     let target_day = new Date(date_now.setDate(date_now.getDate() + 11));
-    string_list += getDayString(compare_day) + FORECAST_SHEET_NAME + "の天気予報(引用元tenki.jp)";
+    string_list += '\n' + getDayString(compare_day) + FORECAST_SHEET_NAME + "の天気予報(引用元tenki.jp)";
     if (Moment.moment(compare_day).isAfter(target_day)){
       string_list += "\n次の予定は11日以上先なので、まだ予報が出ていません。";
       return string_list;
