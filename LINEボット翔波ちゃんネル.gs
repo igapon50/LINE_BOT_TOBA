@@ -176,13 +176,13 @@ function updateRichMenuAll() {
     bot_message = `${user_message}\n次回予定がありません。`;
   }else{
     main_message = forcasts.getClosestDayForcast(nextLineBotDay.day);
-    bot_message = `${user_message}\n${main_message}`;
+    bot_message = `${user_message}${main_message}`;
   }
   menus.setReturnText(user_message, bot_message);
 
   user_message = '日程情報';
   main_message = days.getLineBotInformation();
-  bot_message = `${user_message}\n${main_message}`;
+  bot_message = `${user_message}${main_message}`;
   menus.setReturnText(user_message, bot_message);
 
   user_message = '次回未記入者';
@@ -191,7 +191,7 @@ function updateRichMenuAll() {
   }else{
     let noAnswerMember = nextLineBotDay.getNoAnswerMemberIndexList();
     main_message = days.getNamesString(noAnswerMember);
-    bot_message = `${user_message}\n${main_message}`;
+    bot_message = `${user_message}${main_message}`;
   }
   menus.setReturnText(user_message, bot_message);
 
@@ -201,7 +201,7 @@ function updateRichMenuAll() {
   }else{
     let participantMember = nextLineBotDay.getParticipantMemberIndexList();
     main_message = days.getNamesString(participantMember);
-    bot_message = `${user_message}\n${main_message}`;
+    bot_message = `${user_message}${main_message}`;
   }
   menus.setReturnText(user_message, bot_message);
 
@@ -222,7 +222,7 @@ function updateRichMenuNextForcast() {
     bot_message = `${user_message}\n次回予定がありません。`;
   }else{
     main_message = forcasts.getClosestDayForcast(nextLineBotDay.day);
-    bot_message = `${user_message}\n${main_message}`;
+    bot_message = `${user_message}${main_message}`;
   }
   menus.setReturnText(user_message, bot_message);
 
@@ -238,7 +238,7 @@ function updateRichMenuSchedule() {
 
   user_message = '日程情報';
   main_message = days.getLineBotInformation();
-  bot_message = `${user_message}\n${main_message}`;
+  bot_message = `${user_message}${main_message}`;
   menus.setReturnText(user_message, bot_message);
 
   menus.updateSheet();
@@ -258,7 +258,7 @@ function updateRichMenuNoAnswerMemberNames() {
   }else{
     let noAnswerMember = nextLineBotDay.getNoAnswerMemberIndexList();
     main_message = days.getNamesString(noAnswerMember);
-    bot_message = `${user_message}\n${main_message}`;
+    bot_message = `${user_message}${main_message}`;
   }
   menus.setReturnText(user_message, bot_message);
 
@@ -279,7 +279,7 @@ function updateRichMenuParticipantMemberNames() {
   }else{
     let participantMember = nextLineBotDay.getParticipantMemberIndexList();
     main_message = days.getNamesString(participantMember);
-    bot_message = `${user_message}\n${main_message}`;
+    bot_message = `${user_message}${main_message}`;
   }
   menus.setReturnText(user_message, bot_message);
 
