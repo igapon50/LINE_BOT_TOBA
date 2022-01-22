@@ -7,11 +7,13 @@ const MEMBER_SHEET_NAME = PropertiesService.getScriptProperties().getProperty('M
 
 function Test_myMembers() {
   let members = new Members();
-  console.log(members);
+  console.log(members.members);
   let lineBotTransferEMaillist = members.getLineBotTransferEMailList();
   console.log(lineBotTransferEMaillist);
-  let igarashi = members.members[members.lastRow - 1 - 1];
-  let countingYears = igarashi.getCountingYears();
+  console.log(lineBotTransferEMaillist.join())
+  // let last_member = members.members[members.lastRow - 2];
+  let last_member = members.members.slice(-2)[0];
+  let countingYears = last_member.getCountingYears();
   console.log(countingYears);
 }
 

@@ -19,7 +19,7 @@
 //みんなに転送再開の連絡する
 
 const CHANNEL_ACCESS_TOKEN = PropertiesService.getScriptProperties().getProperty('CHANNEL_ACCESS_TOKEN');
-const STATUS_200 = ContentService.createTextOutput(JSON.stringify({'status': 200})).setMimeType(ContentService.MimeType.JSON);
+const STATUS_200 = ContentService.createTextOutput(JSON.stringify({'content': 'post ok'})).setMimeType(ContentService.MimeType.JSON);
 
 function Test_myBot(){
   // ボットが応答するメッセージをログに出して確認する
@@ -66,25 +66,25 @@ function doPost(e) {
   let reply_token = '';
   let user_message = '';
   let userDisplayName = ''
+  let members = new Members();
+  let mailAddressList = members.getLineBotTransferEMailList();
+  let attachImg = null
   if (!e){
     //引数が未定義ならテスト動作とする
-    let members = new Members();
-    let mailAddressList = members.getLineBotTransferEMailList();
     console.log(mailAddressList);
     mailAddressList = getPropertyArray('TEST_MAILADDRESS');
-    const type = 'text';
     user_message = '次回予報';
     // user_message = '日程情報';
     // user_message = '次回未記入者';
     // user_message = '次回参加者';
     // user_message = 'メールに転送されるLINEのメッセージ';
-    let attachImg = null
     userDisplayName = 'userDisplayName';
-    receiveMessage(IsTransferEMailEnabled, mailAddressList, user_message, attachImg, userDisplayName);
-    replayMessage(reply_token, IsTransferEMailEnabled, mailAddressList, user_message);
-    return STATUS_200;
   }else{
-    const contents = e.postData.contents;
+    console.log(e);
+    const postData = e.postData;
+    if (!postData) return STATUS_200;
+    const contents = postData.contents;
+    if (!contents) return STATUS_200;
 
     //現状では、GASのdoPostでリクエストヘッダーを取得する手段がないので、署名の検証ができない。
     //署名の検証
@@ -101,63 +101,43 @@ function doPost(e) {
     // }
 
     const event = JSON.parse(contents).events[0];
-    if (!event) {
-      // LINEプラットフォームから疎通確認のために、Webhookイベントが含まれないHTTP POSTリクエストが送信されることがあります。 この場合も、ステータスコード200を返してください。
-      // https://developers.line.biz/ja/reference/messaging-api/#response
-      return STATUS_200;
-    }
+    // LINEプラットフォームから疎通確認のために、Webhookイベントが含まれないHTTP POSTリクエストが送信されることがあります。
+    // この場合も、ステータスコード200を返してください。
+    // https://developers.line.biz/ja/reference/messaging-api/#response
+    if (!event) return STATUS_200;
     reply_token = event.replyToken;
-    if (!reply_token) {
-      // LINEプラットフォームから送信されるHTTP POSTリクエストは、送受信に失敗しても再送されません。
-      return STATUS_200;
-    }
-    if (event.source.type === 'user'){
-      //ユーザー1対1のトークの場合
-      IsTransferEMailEnabled = false;
-    } else {
-      //それ以外(グループトークgroupとトークルームroom)の場合
-      IsTransferEMailEnabled = true;
-    }
-    const type = event.message.type;
-    if (type === 'image' && type === 'text') {
-      //LINEからimageとtextが送られた場合
-      let members = new Members();
-      let mailAddressList = members.getLineBotTransferEMailList();
-      user_message = event.message.text;
-      let attachImg = null;
-      if (type === 'image')attachImg = getLINEImage(event.message.id); //画像Brob
-      const userID = event.source.userId;
-      userDisplayName = getLINEUserName(userID);
-      receiveMessage(IsTransferEMailEnabled, mailAddressList, user_message, attachImg, userDisplayName);
-      replayMessage(reply_token, IsTransferEMailEnabled, mailAddressList, user_message);
-    }
-    return STATUS_200;
+    // LINEプラットフォームから送信されるHTTP POSTリクエストは、送受信に失敗しても再送されません。
+    if (!reply_token) return STATUS_200;
+    //ユーザー1対1のトークの場合転送しない、それ以外(グループトークgroupとトークルームroom)の場合転送する
+    if (event.source && event.source.type === 'user') IsTransferEMailEnabled = false;
+    let type = ''
+    if (event.message) type = event.message.type;
+    if (type !== 'image' && type !== 'text') return STATUS_200;
+    if (type === 'image') attachImg = getLINEImage(event.message.id); //画像Brob
+    user_message = event.message.text;
+    const groupID = event.source.groupID;
+    const userID = event.source.userId;
+    userDisplayName = getLINEGroupUserName(groupID, userID);
   }
+  if (IsTransferEMailEnabled) receiveMessage(mailAddressList, user_message, attachImg, userDisplayName);
+  return replayMessage(reply_token, IsTransferEMailEnabled, mailAddressList, user_message);
 }
 
-//受信メッセージ
-function receiveMessage(IsTransferEMailEnabled, mailAddressList, user_message, attachImg, userDisplayName){
-  if (IsTransferEMailEnabled){
-    //botが受け取ったメッセージはメールに転送する(メニュー呼び出しメッセージ含む)
-    sendEmail(mailAddressList, user_message, userDisplayName + 'の発言', attachImg);
-  }
+// 受信メッセージ、botが受け取ったメッセージはメールに転送する(リッチメニュー呼び出しメッセージ含む)
+function receiveMessage(mailAddressList, user_message, attachImg, userDisplayName){
+  //botが受け取ったメッセージはメールに転送する(メニュー呼び出しメッセージ含む)
+  sendEmail(mailAddressList, user_message, userDisplayName + 'の発言', attachImg);
   return STATUS_200;
 }
 
-//応答メッセージ
+// 応答メッセージ、botの応答をメールやLINEに送る
 function replayMessage(reply_token, IsTransferEMailEnabled, mailAddressList, user_message){
   let bot_message;
   let menus = new RichMenus();
   bot_message = menus.getReturnText(user_message);
   if (bot_message){
-    if (IsTransferEMailEnabled){
-      //botの応答をメールに転送する
-      sendEmail(mailAddressList, bot_message , 'LINE bot 翔波ちゃんネルの発言', null);
-    }
-    if (reply_token){
-      //botの応答をLINEチャットに送る
-      sendLINE(reply_token, bot_message);
-    }
+    if (IsTransferEMailEnabled)sendEmail(mailAddressList, bot_message , 'LINE bot 翔波ちゃんネルの発言', null);
+    if (reply_token)sendLINE(reply_token, bot_message);
   }
   return STATUS_200;
 }
