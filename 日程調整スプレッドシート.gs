@@ -5,7 +5,7 @@
 const SCHEDULE_SPREADSHEET_ID = PropertiesService.getScriptProperties().getProperty('SCHEDULE_SPREADSHEET_ID');
 const SCHEDULE_SHEET_NAME = PropertiesService.getScriptProperties().getProperty('SCHEDULE_SHEET_NAME');
 
-function mySchedulesTest(){
+function Test_mySchedules(){
   let days = new Schedules();
   console.log(days);
   let list = days.getLineBotList();
@@ -66,6 +66,7 @@ function mySchedulesTest(){
 //メンバーインデックスリストから、名前文字列を作成して返す。
   Schedules.prototype.getNamesString = function(list){
     let stringlist = [];
+    stringlist += '\n';
     for(let i in list){
       stringlist += '　' + this.header.member[list[i]].replace('\n', ' ');
     }
@@ -97,9 +98,8 @@ function mySchedulesTest(){
       }
       let week_num = lineBotList[i].day.getDay();
       let week = '(' + ['日', '月', '火', '水', '木', '金', '土'][week_num] + ')';
-      stringlist += getDayString(lineBotList[i].day) + '' + 
-      week + '' +
-      lineBotList[i].eventName + '\n';
+      stringlist += '\n' + getDayString(lineBotList[i].day) + '' + 
+      week + '' + lineBotList[i].eventName;
     }
     return stringlist;
   };

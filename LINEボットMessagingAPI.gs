@@ -18,14 +18,14 @@ const DRIVE_FILE_ID = PropertiesService.getScriptProperties().getProperty('DRIVE
 //https://photocombine.net/watermark/
 
 //デフォルトリッチメニューのIDを取得する
-// function myGetDefaultRichMenuTest(){
+// function Test_myGetDefaultRichMenu(){
 //   let richMenuID = getDefaultRichmenu();
 //   console.log(richMenuID);
 //   return richMenuID;
 // }
 
 //メニューを取得する
-function myGetRichMenuTest(){
+function Test_myGetRichMenu(){
   let richMenuID = getRichmenus();
   console.log(richMenuID);
   return richMenuID;

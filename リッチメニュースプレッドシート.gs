@@ -5,7 +5,7 @@
 const RICHMENUS_SPREADSHEET_ID = PropertiesService.getScriptProperties().getProperty('RICHMENUS_SPREADSHEET_ID');
 const RICHMENUS_SHEET_NAME = PropertiesService.getScriptProperties().getProperty('RICHMENUS_SHEET_NAME');
 
-function myRichMenusTest() {
+function Test_myRichMenus() {
   let menus = new RichMenus();
   console.log(menus);
   console.log(menus.menus['日程情報']);
@@ -58,6 +58,11 @@ function myRichMenusTest() {
 
   };
 
+//リッチメニューのコマンド一覧を配列で返す
+　RichMenus.prototype.getMenusList = function(){
+    return Object.keys(this.menus);
+  };
+
 //リッチメニューの応答文を返す。
 //要求するリッチメニューをパラメータで指定する。
 //パラメータの文字列が100文字を超えたらnullを返す。
@@ -69,7 +74,7 @@ function myRichMenusTest() {
     if (richMenu.length > 100 ){
       return null;
     }
-    return this.menus[richMenu] || '';
+    return this.menus[richMenu];
   };
 
 //リッチメニューの応答文を更新する。

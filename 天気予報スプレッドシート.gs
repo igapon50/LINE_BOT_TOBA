@@ -5,7 +5,7 @@
 const FORECAST_SPREADSHEET_ID = PropertiesService.getScriptProperties().getProperty('FORECAST_SPREADSHEET_ID');
 const FORECAST_SHEET_NAME = PropertiesService.getScriptProperties().getProperty('FORECAST_SHEET_NAME');
 
-function myForcastsTest() {
+function Test_myForcasts() {
   //10日予報をtenki.jpから「天気予報」スプレッドシートに取得する処理はトリガー起動しているのでここでは未確認
   let forcasts = new Forcasts();
   console.log(forcasts);
@@ -26,8 +26,8 @@ function myForcastsTest() {
     let spreadsheet = SpreadsheetApp.openById(FORECAST_SPREADSHEET_ID);
     this.sheet = spreadsheet.getSheetByName(FORECAST_SHEET_NAME);
     let _values = this.sheet.getDataRange().getValues();
-//    this.header = new Forcast(_values[0]);
-//    _values.shift(); //ヘッダーを削除
+    // this.header = new Forcast(_values[0]);
+    // _values.shift(); //ヘッダーを削除
     this.lastColumn = this.sheet.getDataRange().getLastColumn();
     this.lastRow = _values.length;
     this.forcasts = [];
@@ -36,20 +36,20 @@ function myForcastsTest() {
     }
   };
 
-//「天気予報」スプレッドシートから指定日予報を読み込んで表示用メッセージを返す。
-//指定日の予報がない場合、予定がありませんメッセージ
-//指定日が10日より先で予報がまだない場合、10日以内しか予報がありませんメッセージ
+  // 「天気予報」スプレッドシートから指定日予報を読み込んで表示用メッセージを返す。
+  // 指定日の予報がない場合、予定がありませんメッセージ
+  // 指定日が10日より先で予報がまだない場合、10日以内しか予報がありませんメッセージ
   Forcasts.prototype.getClosestDayForcast = function(compare_day){
     let string_list = [];
     let date_now = new Date();
     let target_day = new Date(date_now.setDate(date_now.getDate() + 11));
-    string_list += getDayString(compare_day) + FORECAST_SHEET_NAME + "の天気予報(引用元tenki.jp)";
+    string_list += '\n' + getDayString(compare_day) + FORECAST_SHEET_NAME + "の天気予報(引用元tenki.jp)";
     if (Moment.moment(compare_day).isAfter(target_day)){
       string_list += "\n次の予定は11日以上先なので、まだ予報が出ていません。";
       return string_list;
     }
     
-    //一行ずつループを回し、日時が指定日と同じかチェックする。
+    // 一行ずつループを回し、日時が指定日と同じかチェックする。
     for (let i in this.forcasts){
       target_day = this.forcasts[i].monthDay;
       let compare = Moment.moment(target_day).isSame(compare_day, 'day');
@@ -93,6 +93,9 @@ function myForcastsTest() {
   global.Forcast = Forcast;
 })(this);
 
+// tenki.jpにスクレイピング対策が入ったみたいで、UrlFetchApp.fetchが応答しない。
+// User Agentを見ているものと思われるが、変更するすべはなし。
+// https://kapiecii.hatenablog.com/entry/2019/05/10/230950#User-Agent%E3%82%92%E5%A4%89%E6%9B%B4%E3%81%99%E3%82%8B
 // 天気予報tenki.jpから七尾市和倉町の10日予報の日付、天気、気温、風向、風力をとってきてスプレッドシートに記載する
 function getForecastFromUrlToSpreadsheet() {
   //「スプレッドシート」の「七尾市和倉町」
@@ -144,10 +147,10 @@ function getForecastFromUrlToSpreadsheet() {
   
   //スプレッドシートをクリアしてから記載する
   sheet.clear();
+  sheet.getRange('B:H').setNumberFormat('@'); //文字列扱いする列=B:H
   //降水確率をsetValueすると数値セルになる。
   //数値セルのままgetValueすると、例えば10%が0.1になってしまう。
-  //書式をクリアして文字列の%にしておく必要あり。
-  //試してないがgetDisplayValueだと上手くいくかも？
+  //書式をクリアして文字列の%にしておく。
   let row = 1;
   let count = 0;
   for (let i in data_time) {
@@ -156,14 +159,16 @@ function getForecastFromUrlToSpreadsheet() {
         count++;
       }
     }
-    sheet.appendRow([data_MonthDay[count],
+    let lastRow = sheet.getLastRow() + 1;
+    let range = sheet.getRange(lastRow, 1, 1, 8); //列数=8
+    range.setValues([[data_MonthDay[count],
                     data_week[count],
                     data_time[i] + '時',
                     data_weather[i],
                     data_prob[i],
                     data_temp[i] + '℃',
                     data_wind_blow[i],
-                    data_windspeed[i] + 'm/s']);
+                    data_windspeed[i] + 'm/s']]);
     row++;
   }
   return row;
