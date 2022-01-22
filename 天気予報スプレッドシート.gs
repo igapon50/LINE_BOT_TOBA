@@ -26,8 +26,8 @@ function Test_myForcasts() {
     let spreadsheet = SpreadsheetApp.openById(FORECAST_SPREADSHEET_ID);
     this.sheet = spreadsheet.getSheetByName(FORECAST_SHEET_NAME);
     let _values = this.sheet.getDataRange().getValues();
-//    this.header = new Forcast(_values[0]);
-//    _values.shift(); //ヘッダーを削除
+    // this.header = new Forcast(_values[0]);
+    // _values.shift(); //ヘッダーを削除
     this.lastColumn = this.sheet.getDataRange().getLastColumn();
     this.lastRow = _values.length;
     this.forcasts = [];
@@ -36,9 +36,9 @@ function Test_myForcasts() {
     }
   };
 
-//「天気予報」スプレッドシートから指定日予報を読み込んで表示用メッセージを返す。
-//指定日の予報がない場合、予定がありませんメッセージ
-//指定日が10日より先で予報がまだない場合、10日以内しか予報がありませんメッセージ
+  // 「天気予報」スプレッドシートから指定日予報を読み込んで表示用メッセージを返す。
+  // 指定日の予報がない場合、予定がありませんメッセージ
+  // 指定日が10日より先で予報がまだない場合、10日以内しか予報がありませんメッセージ
   Forcasts.prototype.getClosestDayForcast = function(compare_day){
     let string_list = [];
     let date_now = new Date();
@@ -49,7 +49,7 @@ function Test_myForcasts() {
       return string_list;
     }
     
-    //一行ずつループを回し、日時が指定日と同じかチェックする。
+    // 一行ずつループを回し、日時が指定日と同じかチェックする。
     for (let i in this.forcasts){
       target_day = this.forcasts[i].monthDay;
       let compare = Moment.moment(target_day).isSame(compare_day, 'day');
@@ -93,6 +93,9 @@ function Test_myForcasts() {
   global.Forcast = Forcast;
 })(this);
 
+// tenki.jpにスクレイピング対策が入ったみたいで、UrlFetchApp.fetchが応答しない。
+// User Agentを見ているものと思われるが、変更するすべはなし。
+// https://kapiecii.hatenablog.com/entry/2019/05/10/230950#User-Agent%E3%82%92%E5%A4%89%E6%9B%B4%E3%81%99%E3%82%8B
 // 天気予報tenki.jpから七尾市和倉町の10日予報の日付、天気、気温、風向、風力をとってきてスプレッドシートに記載する
 function getForecastFromUrlToSpreadsheet() {
   //「スプレッドシート」の「七尾市和倉町」
