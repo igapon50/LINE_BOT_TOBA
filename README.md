@@ -1,5 +1,7 @@
 # LINE_BOT_TOBA
 
+2022/1/23現在、引用元サイトにスクレイピング対策が入ったようで、次回予報に表示する情報が取得できなくなった。
+
 https://github.com/igapon50/LINE_BOT_TENSOU
 にリッチメニューとその応答処理を追加した。
 ただし、[リッチメニューはグループでは使えない](https://teratail.com/questions/271435)ので、botとの1対1トークで利用すること。
