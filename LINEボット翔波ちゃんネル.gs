@@ -115,7 +115,7 @@ function doPost(e) {
     if (type !== 'image' && type !== 'text') return STATUS_200;
     if (type === 'image') attachImg = getLINEImage(event.message.id); //画像Brob
     user_message = event.message.text;
-    const groupID = event.source.groupID;
+    const groupID = event.source.groupId;
     const userID = event.source.userId;
     userDisplayName = getLINEGroupUserName(groupID, userID);
   }
