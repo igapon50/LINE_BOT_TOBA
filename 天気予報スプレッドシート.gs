@@ -43,7 +43,8 @@ function Test_myForcasts() {
     let string_list = [];
     let date_now = new Date();
     let target_day = new Date(date_now.setDate(date_now.getDate() + 11));
-    string_list += '\n' + getDayString(compare_day) + FORECAST_SHEET_NAME + "の天気予報(引用元tenki.jp)";
+    string_list += '\n' + getDayString(compare_day) + FORECAST_SHEET_NAME + "の天気予報";
+    string_list += '\n(https://tenki.jp/forecast/4/20/5620/17202/10days.html)';
     if (Moment.moment(compare_day).isAfter(target_day)){
       string_list += "\n次の予定は11日以上先なので、まだ予報が出ていません。";
       return string_list;
