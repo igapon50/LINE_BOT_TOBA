@@ -27,7 +27,7 @@ function Test_myForcasts() {
     this.sheet = spreadsheet.getSheetByName(FORECAST_SHEET_NAME);
     let _values = this.sheet.getDataRange().getValues();
     // this.header = new Forcast(_values[0]);
-    // _values.shift(); //ヘッダーを削除
+    _values.shift(); //ヘッダーを削除
     this.lastColumn = this.sheet.getDataRange().getLastColumn();
     this.lastRow = _values.length;
     this.forcasts = [];
@@ -71,6 +71,7 @@ function Test_myForcasts() {
     this.time,
     this.weather,
     this.prob,
+    this.precip,
     this.temp,
     this.windBlow,
     this.windSpeed] = record;
@@ -85,6 +86,7 @@ function Test_myForcasts() {
               this.time + ' ' +
               this.weather + ' ' +
               this.prob + ' ' +
+              this.precip + ' ' +
               this.temp + ' ' +
               this.windBlow + ' ' +
               this.windSpeed;
