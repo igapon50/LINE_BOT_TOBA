@@ -1,7 +1,5 @@
-// スプレッドシートのURLは
+// スプレッドシートのURLは、以下のフォーマットになっています。XXXXXXXの部分がIDになります。
 // https://docs.google.com/spreadsheets/d/XXXXXXX/edit
-// のような形になっています。XXXXXXXの部分がIDになります。
-// 「リッチメニュー」のスプレッドシート
 const RICHMENUS_SPREADSHEET_ID = PropertiesService.getScriptProperties().getProperty('RICHMENUS_SPREADSHEET_ID');
 const RICHMENUS_SHEET_NAME = PropertiesService.getScriptProperties().getProperty('RICHMENUS_SHEET_NAME');
 

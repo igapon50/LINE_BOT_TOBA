@@ -1,7 +1,5 @@
-// スプレッドシートのURLは
+// スプレッドシートのURLは、以下のフォーマットになっています。XXXXXXXの部分がIDになります。
 // https://docs.google.com/spreadsheets/d/XXXXXXX/edit
-// のような形になっています。XXXXXXXの部分がIDになります。
-// 「グループ日程調整」のスプレッドシート
 const SCHEDULE_SPREADSHEET_ID = PropertiesService.getScriptProperties().getProperty('SCHEDULE_SPREADSHEET_ID');
 const SCHEDULE_SHEET_NAME = PropertiesService.getScriptProperties().getProperty('SCHEDULE_SHEET_NAME');
 

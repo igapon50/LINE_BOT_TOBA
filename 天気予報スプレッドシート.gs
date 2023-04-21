@@ -1,7 +1,5 @@
-// スプレッドシートのURLは
+// スプレッドシートのURLは、以下のフォーマットになっています。XXXXXXXの部分がIDになります。
 // https://docs.google.com/spreadsheets/d/XXXXXXX/edit
-// のような形になっています。XXXXXXXの部分がIDになります。
-// 「天気予報」のスプレッドシート
 const FORECAST_SPREADSHEET_ID = PropertiesService.getScriptProperties().getProperty('FORECAST_SPREADSHEET_ID');
 const FORECAST_SHEET_NAME = PropertiesService.getScriptProperties().getProperty('FORECAST_SHEET_NAME');
 

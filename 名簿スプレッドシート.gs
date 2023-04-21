@@ -1,7 +1,5 @@
-// スプレッドシートのURLは
+// スプレッドシートのURLは、以下のフォーマットになっています。XXXXXXXの部分がIDになります。
 // https://docs.google.com/spreadsheets/d/XXXXXXX/edit
-// のような形になっています。XXXXXXXの部分がIDになります。
-// 「グループ名簿」のスプレッドシート
 const MEMBER_SPREADSHEET_ID = PropertiesService.getScriptProperties().getProperty('MEMBER_SPREADSHEET_ID');
 const MEMBER_SHEET_NAME = PropertiesService.getScriptProperties().getProperty('MEMBER_SHEET_NAME');
 
