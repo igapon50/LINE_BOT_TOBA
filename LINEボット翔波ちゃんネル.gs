@@ -24,8 +24,8 @@ const STATUS_200 = ContentService.createTextOutput(JSON.stringify({'status': 200
 function Test_myBot(){
   // ボットが応答するメッセージをログに出して確認する
     let user_message;
-    user_message = '不一致';
-    // user_message = '日程情報';
+    // user_message = '不一致';
+    user_message = '日程情報';
     // user_message = '次回予報';
     // user_message = '次回未記入者';
     // user_message = '次回参加者';
@@ -184,8 +184,6 @@ function updateRichMenuAll() {
     bot_message = `${user_message}${main_message}`;
   }
   menus.setReturnText(user_message, bot_message);
-
-  menus.updateSheet();
 }
 
 function updateRichMenuNextForcast() {
@@ -205,8 +203,6 @@ function updateRichMenuNextForcast() {
     bot_message = `${user_message}${main_message}`;
   }
   menus.setReturnText(user_message, bot_message);
-
-  menus.updateSheet();
 }
 
 function updateRichMenuSchedule() {
@@ -220,8 +216,6 @@ function updateRichMenuSchedule() {
   main_message = days.getLineBotInformation();
   bot_message = `${user_message}${main_message}`;
   menus.setReturnText(user_message, bot_message);
-
-  menus.updateSheet();
 }
 
 function updateRichMenuNoAnswerMemberNames() {
@@ -241,8 +235,6 @@ function updateRichMenuNoAnswerMemberNames() {
     bot_message = `${user_message}${main_message}`;
   }
   menus.setReturnText(user_message, bot_message);
-
-  menus.updateSheet();
 }
 
 function updateRichMenuParticipantMemberNames() {
@@ -262,6 +254,4 @@ function updateRichMenuParticipantMemberNames() {
     bot_message = `${user_message}${main_message}`;
   }
   menus.setReturnText(user_message, bot_message);
-
-  menus.updateSheet();
 }

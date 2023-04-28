@@ -33,7 +33,13 @@ function Test_myRichMenus() {
   console.log(menus.getReturnText('12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901'));
   //menus.setReturnText('日程情報', 'テストsetReturnText');
   //console.log(menus.getReturnText('日程情報'));
-  //menus.updateSheet();
+}
+
+function Test_myRichMenus_2() {
+  let menus = new RichMenus();
+  console.log(menus);
+  menus.setReturnText('日程情報', 'テストsetReturnText');
+  console.log(menus.getReturnText('日程情報'))
 }
 
 // 即時関数化して、いろいろ見えないようにする
@@ -43,59 +49,71 @@ function Test_myRichMenus() {
     let spreadsheet = SpreadsheetApp.openById(RICHMENUS_SPREADSHEET_ID);
     this.sheet = spreadsheet.getSheetByName(RICHMENUS_SHEET_NAME);
     let _values = this.sheet.getDataRange().getValues();
+    //一行目は見出しとする。見出し読み込み。
     this.header = new RichMenu(_values[0]);
     _values.shift(); //ヘッダーを削除
+    //二行目以降はデータ。データ読み込み
     this.lastColumn = this.sheet.getDataRange().getLastColumn();
     this.lastRow = _values.length;
     this.keys = [];
     this.menus = {};
-    for(let i in _values){
-      this.menus[_values[i][0]] = _values[i][1]
-      this.keys.push(_values[i][0]);
+    for(let i = 0; i < _values.length; i++){
+      this.menus[i] = new RichMenu(_values[i]);
     }
-
   };
 
-//リッチメニューのコマンド一覧を配列で返す
-　RichMenus.prototype.getMenusList = function(){
-    return Object.keys(this.menus);
-  };
-
-//リッチメニューの応答文を返す。
-//要求するリッチメニューをパラメータで指定する。
-//パラメータの文字列が100文字を超えたらnullを返す。
-//応答文が無かったらnullを返す。
-  RichMenus.prototype.getReturnText = function(richMenu){
+  // リッチメニューの応答文を返す。要求するリッチメニューをパラメータで指定する。パラメータの文字数が100を超えたり、応答文が無かったら''を返す。
+  RichMenus.prototype.getReturnText = function(richMenu, limit_length=100){
     if (richMenu === null || richMenu === undefined || richMenu === ''){
-      return null;
+      return '';
     }
-    if (richMenu.length > 100 ){
-      return null;
+    if (richMenu.length > limit_length ){
+      return '';
     }
-    return this.menus[richMenu];
+    let array = [Object.keys(this.menus), Object.values(this.menus)]
+    return array[richMenu];
   };
 
-//リッチメニューの応答文を更新する。
-  RichMenus.prototype.setReturnText = function(richMenu, returnText){
-    if (richMenu.length > 100 ){
+  // リッチメニューの応答文を更新する。
+  RichMenus.prototype.setReturnText = function(richMenu, returnText, limit_length=100){
+    if (richMenu.length > limit_length ){
       return false;
     }
-    if (this.menus[richMenu] === 'undefined'){
-      return false;
+    for(let row in this.menus){
+      if(this.menus[row].richMenu === richMenu){
+        this.menus[row].returnText = returnText;
+        this.updateSheet()
+        return true;
+      }
     }
-    this.menus[richMenu] = returnText;
-    return true;
+    return false;
   };
 
-//リッチメニューの応答文をスプレッドシートに反映する。
+  // 全てのメニューを取得する
+  RichMenus.prototype.getValues = function(){
+    let values = []
+    for(let row in this.menus){
+      values.push(this.menus[row].getRow());
+    }
+    return values;
+  };
+
+  // リッチメニューの応答文をスプレッドシートに反映する。
   RichMenus.prototype.updateSheet = function(){
-    this.sheet.getDataRange().clearContent();
-    this.sheet.appendRow([this.header.richMenu,
-                         this.header.returnText]);
-    for (let i in this.keys){
-      this.sheet.appendRow([this.keys[i],
-                           this.menus[this.keys[i]]]);
+    // 一旦クリア
+    this.sheet.clearContents();
+    // 見出し反映
+    let values = [];
+    values.push(this.header.getRow());
+    // データの反映
+    for(let value of this.getValues()){
+      values.push(value);
     }
+    //データ範囲の最終行と最終列を求める
+    let column = this.header.getRow().length;
+    let row = values.length;
+    //書き出し
+    this.sheet.getRange(1, 1, row, column).setValues(values);
   };
 
   global.RichMenus = RichMenus;
@@ -105,6 +123,10 @@ function Test_myRichMenus() {
   let RichMenu = function(record) {
     [this.richMenu,
     this.returnText] = record;
+  };
+
+  RichMenu.prototype.getRow = function(){
+    return [this.richMenu, this.returnText];
   };
 
   global.RichMenu = RichMenu;
